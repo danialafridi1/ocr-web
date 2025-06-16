@@ -1,0 +1,29 @@
+# add file to gitignores like .venv, .DS_Store, etc. 
+# This file is used to specify files and directories that should be ignored by Git.
+# It is a good practice to keep this file updated with files that should not be tracked by Git.
+# .gitignore
+# Ignore Python bytecode files
+*.pyc
+
+# Ignore Python cache directories
+__pycache__/
+# Ignore virtual environment directories
+.venv/
+# Ignore macOS system files
+.DS_Store
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+# Ignore log files
+*.log
+# Ignore environment variable files
+.env
+# Ignore coverage reports
+coverage.xml
+# Ignore test output files
+test_output.txt
+# Ignore build directories
+build/
+# Ignore distribution directories
+dist/
+# Ignore package metadata files
+*.egg-info/

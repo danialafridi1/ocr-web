@@ -1,0 +1,485 @@
+{% extends "base.html" %}
+
+{% block title %}OCR-Home{% endblock %}
+{% csrf_token %}
+
+{% block content %}
+<div class="container mx-auto p-6" data-aos="fade-up">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Upload or Drag Image Section -->
+        <div class="flex flex-col justify-center items-center bg-white p-8 border-2 border-gray-300 rounded-lg shadow-lg"
+            data-aos="zoom-in-right" data-aos-delay="100">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Upload or Drag Image</h2>
+            <div class="w-full border-4 border-dashed border-gray-300 p-6 text-center">
+                <label for="uploadImage" class="text-gray-600 font-medium">
+                    Drag or Click to Upload Image
+                </label>
+                <input type="file" accept="image/*" id="uploadImage"
+                    class="hidden w-full py-2 px-4 mt-4 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                <!-- Image preview element -->
+                <div id="imagePreview" class="mt-4 hidden" data-aos="fade-in" data-aos-delay="300">
+                    <img id="previewImage" class="w-auto h-auto object-cover rounded-lg shadow-md border"
+                        title="Image preview" />
+                </div>
+                <p id="imageError" class="text-red-500 text-sm mt-2 hidden">Please upload an image first.</p>
+            </div>
+        </div>
+
+        <!-- Algorithm Selection Section -->
+        <div class="flex flex-col justify-center items-center bg-white p-8 border-2 border-gray-300 rounded-lg shadow-lg"
+            data-aos="zoom-in-left" data-aos-delay="200">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Select OCR Algorithm</h2>
+        
+            <div class="w-full flex flex-col gap-6">
+                <!-- End-to-End OCR -->
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-2">End-to-End OCR</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="easyocr"
+                                class="h-5 w-5 text-primary border-gray-300 rounded focus:ring-2 focus:ring-primary">
+                            <label for="easyocr" class="ml-2 text-gray-700">Easy OCR</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="tesseractOcr"
+                                class="h-5 w-5 text-primary border-gray-300 rounded focus:ring-2 focus:ring-primary">
+                            <label for="tesseractOcr" class="ml-2 text-gray-700">Tesseract OCR</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="transformerocr"
+                                class="h-5 w-5 text-primary border-gray-300 rounded focus:ring-2 focus:ring-primary">
+                            <label for="transformerocr" class="ml-2 text-gray-700">Transformer OCR</label>
+                        </div>
+                        <!-- <div class="flex items-center">
+                            <input type="checkbox" id="docTR"
+                                class="h-5 w-5 text-primary border-gray-300 rounded focus:ring-2 focus:ring-primary">
+                            <label for="docTR" class="ml-2 text-gray-700">DocTR OCR</label>
+                        </div> -->
+                    </div>
+                </div>
+        
+                <!-- Deep Learning Models -->
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-2">Deep Learning Models</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="cnn"
+                                class="h-5 w-5 text-primary border-gray-300 rounded focus:ring-2 focus:ring-primary">
+                            <label for="cnn" class="ml-2 text-gray-700">Convolutional Neural Network (CNN)</label>
+                        </div>
+                        <!-- Add more DL models here if needed -->
+                    </div>
+                </div>
+            </div>
+        
+            <hr class="my-4 w-full border-gray-300">
+        
+            <button id="startButton"
+                class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-green-600 transition duration-300 shadow-lg focus:outline-none mt-4 disabled:opacity-50 disabled:cursor-not-allowed">
+                Start Processing
+            </button>
+        
+            <p id="algoError" class="text-red-500 text-sm mt-2 hidden">Please select at least one algorithm.</p>
+        </div>
+    
+    </div>
+
+    <!-- Show Results Section -->
+    <div class="flex flex-col justify-center items-center bg-white p-8 border-2 border-gray-300 rounded-lg shadow-lg mt-8"
+        data-aos="zoom-in-up" data-aos-delay="400">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Algorithm Results</h2>
+        <div class="w-full bg-white shadow-md rounded-lg border border-gray-300" data-aos="fade-up"
+            data-aos-delay="500">
+            <table class="w-full text-sm text-left table-border-collapse">
+                <thead class="bg-gray-100 text-gray-800">
+                    <tr>
+                        <th class="px-4 py-2 border-b">Algorithm Name</th>
+                        <th class="px-4 py-2 border-b">Result</th>
+                        <th class="px-4 py-2 border-b">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="resultTable" class="bg-white p-4 m-4">
+                    <!-- Dynamic content will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="flex flex-col justify-center items-center bg-white p-8 border-2 border-gray-300 rounded-lg shadow-lg mt-8 w-full max-w-screen-xl mx-auto"
+    data-aos="zoom-in-up" data-aos-delay="600">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">Summarize Results</h2>
+
+    <!-- Display the summary result in a <p> tag -->
+    <p id="algorithmResults"
+        class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary mb-4">
+        Enter summary here...
+    </p>
+
+    <!-- Spinner Loader (Initially Hidden) -->
+    <div id="loader" class="hidden absolute inset-0 flex justify-center items-center bg-gray-500 bg-opacity-50 z-50">
+        <div class="w-16 h-16 border-4 border-t-4 border-blue-500 border-solid rounded-full animate-spin"></div>
+    </div>
+</div>
+
+<div id="askAiModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
+    <!-- Modal Box -->
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-6 relative animate-fadeIn">
+        <!-- Close Button -->
+        <button onclick="closeModal()" class="absolute top-3 right-3 text-gray-500 hover:text-red-600">
+            &times;
+        </button>
+
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">Ask AI About This Result</h2>
+
+        <textarea id="aiPrompt" rows="5"
+            class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Type your question here..."></textarea>
+
+        <div class="mt-4 flex justify-end space-x-3">
+            <button onclick="closeModal()"
+                class="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100">
+                Cancel
+            </button>
+            <button onclick="submitPrompt()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                Submit
+            </button>
+        </div>
+    </div>
+    </div>
+
+ 
+      
+<script>
+    const uploadImage = document.getElementById('uploadImage');
+    const startButton = document.getElementById('startButton');
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+
+    function updateStartButtonState() {
+        const imageSelected = uploadImage.files.length > 0;
+        const algoSelected = document.querySelectorAll('input[type="checkbox"]:checked').length > 0;
+
+        // Show or hide image error
+        const imageError = document.getElementById('imageError');
+        imageError.classList.toggle('hidden', imageSelected);
+
+        // Show or hide algorithm error
+        const algoError = document.getElementById('algoError');
+        algoError.classList.toggle('hidden', algoSelected);
+
+        startButton.disabled = !(imageSelected && algoSelected);
+    }
+
+    // Image selection
+    uploadImage.addEventListener('change', function () {
+        updateStartButtonState();
+    });
+
+    // Algorithm checkbox change
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', function () {
+            updateStartButtonState();
+        });
+    });
+
+    // Initially disable start button
+    startButton.disabled = true;
+
+    function getCSRFToken() {
+        var csrfToken = null;
+        document.cookie.split(';').forEach(function (cookie) {
+            var parts = cookie.trim().split('=');
+            if (parts[0] === 'csrftoken') {
+                csrfToken = parts[1];
+            }
+        });
+        return csrfToken;
+    }
+
+    document.getElementById('uploadImage').addEventListener('change', function (event) {
+        var reader = new FileReader();
+        reader.onload = function () {
+            document.getElementById('imagePreview').style.display = 'block';
+            document.getElementById('previewImage').src = reader.result;
+        }
+        reader.readAsDataURL(event.target.files[0]);
+    });
+
+    document.getElementById('startButton').addEventListener('click', function () {
+            var startButton = document.getElementById('startButton');
+            var selectedAlgos = [];
+            document.querySelectorAll('input[type="checkbox"]:checked').forEach(function (checkbox) {
+                selectedAlgos.push(checkbox.id);
+            });
+
+            // Check if a loader already exists, if not, create and append it
+            var loader = startButton.querySelector('.loader');
+            if (!loader) {
+                loader = document.createElement('div');
+                loader.className = 'loader ml-2 inline-block w-4 h-4 border-2 border-t-2 border-white rounded-full animate-spin';
+                startButton.appendChild(loader);
+            }
+
+            // Send image and selected algorithms for processing (AJAX or form submission)
+            var formData = new FormData();
+            formData.append("image", document.getElementById('uploadImage').files[0]);
+            formData.append("algorithms", selectedAlgos.join(','));
+
+            fetch('/process_image/', { // Replace with your processing endpoint
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCSRFToken(), // Add CSRF token to the request headers
+                },
+                body: formData
+            }).then(response => response.json()).then(data => {
+                var resultTable = document.getElementById('resultTable');
+                resultTable.innerHTML = ''; // Clear previous results
+
+                data.results.forEach(function (result, index) {
+                    var row = document.createElement('tr');
+                    row.id = `resultRow-${index}`;
+                    row.classList.add('border-t'); // Add border between rows
+                  
+                    var algorithmCell = document.createElement('td');
+                    var resultCell = document.createElement('td');
+                    var actionCell = document.createElement('td');
+                                        // add padding and margin in table tbody
+                    algorithmCell.className = 'px-4 py-2 border-b ';
+
+
+                    // Add algorithm name
+                    algorithmCell.textContent = result.algorithm;
+
+                    // Add result
+                    resultCell.textContent = result.result;
+
+                    // Create Summarize button
+                    var summarizeButton = document.createElement('button');
+                    summarizeButton.textContent = 'Summarize';
+                    summarizeButton.className = 'px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 p-2 m-2';
+                    summarizeButton.addEventListener('click', function () {
+                        // Disable the button to prevent multiple clicks
+                        summarizeButton.disabled = true;
+
+                        // Create loader spinner for summarize button
+                        var loader = document.createElement('div');
+                        loader.className = 'loader ml-2 inline-block w-4 h-4 border-2 border-t-2 border-white rounded-full animate-spin';
+                        summarizeButton.appendChild(loader);
+
+                        // Send the result to your backend for summarization
+                        fetch('/summarize_result/', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': getCSRFToken(),
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ result_text: result.result })
+                        }).then(response => response.json()).then(data => {
+                            // Remove loader
+                            summarizeButton.removeChild(loader);
+                            summarizeButton.disabled = false;
+
+                            // Insert the summary into the summary box
+                            var summaryBox = document.getElementById('algorithmResults');
+                            summaryBox.textContent = `Summary: ${data.summary || 'No summary available.'}`;
+                        }).catch(error => {
+                            // Remove loader
+                            summarizeButton.removeChild(loader);
+                            summarizeButton.disabled = false;
+
+                            console.error('Error:', error);
+                            alert('Failed to generate summary.');
+                        });
+                    });
+
+                  
+                   var askButton = document.createElement('button');
+                   askButton.textContent= "Ask AI";
+                   askButton.className='px-4 py-2 bg-red-500 text-white rounded hover:bg-blue-600';
+                   askButton.addEventListener('click', function(){
+                    currentAlgoResult = result.result;  // store the algo result globally
+                          openModal();
+                    
+                       
+                       
+                   });
+                   
+                   actionCell.appendChild(askButton)
+                   actionCell.appendChild(summarizeButton);
+
+                    // Append cells to the row
+                    row.appendChild(algorithmCell);
+                    row.appendChild(resultCell);
+                    row.appendChild(actionCell);
+
+                    // Append row to the table
+                    resultTable.appendChild(row);
+                });
+
+                // Remove loader once the results are processed
+                if (loader) {
+                    startButton.removeChild(loader);
+                }
+            }).catch((error) => {
+                // Handle the error gracefully
+                resultTable.innerHTML = '<tr><td colspan="3" class="text-red-500 text-center">Error processing the image. Please try again.</td></tr>';
+                // alert("Error processing the image. Please try again.");
+
+                // Remove loader in case of error
+                if (loader) {
+                    startButton.removeChild(loader);
+                }
+            });
+        });
+
+</script>
+<script>
+    let currentAlgoResult = ''; // global to store algo result for modal submit
+
+        function openModal() {
+            document.getElementById('askAiModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('askAiModal').classList.add('hidden');
+            document.getElementById('aiPrompt').value = '';  // clear input
+
+            // Remove loader if still present
+            const loader = document.getElementById('aiLoader');
+            if (loader) loader.remove();
+        }
+
+        // Utility: Create loader spinner element
+        function createLoader() {
+            const loader = document.createElement('div');
+            loader.id = 'aiLoader';
+            loader.className = 'loader ml-2 inline-block w-5 h-5 border-4 border-t-4 border-gray-600 rounded-full animate-spin';
+            return loader;
+        }
+
+        // Submit prompt from modal and send result + prompt to backend
+        async function submitPrompt() {
+            const prompt = document.getElementById('aiPrompt').value.trim();
+            if (!prompt) {
+                alert('Please enter a prompt.');
+                return;
+            }
+
+            const submitBtn = document.querySelector('#askAiModal button.bg-blue-600'); // your Submit button
+            if (!submitBtn) {
+                alert('Submit button not found');
+                return;
+            }
+
+            // Disable submit button and add loader
+            submitBtn.disabled = true;
+            const loader = createLoader();
+            submitBtn.appendChild(loader);
+
+            try {
+                const response = await fetch('/ask_ai/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken(),
+                    },
+                    body: JSON.stringify({ question: prompt, result_text: currentAlgoResult }),
+                });
+
+                const data = await response.json();
+
+                // Show the AI solution in your result area
+                const summaryBox = document.getElementById('algorithmResults');
+
+                // Clear previous result
+                summaryBox.innerHTML = '';
+
+                // Format and display result with line breaks and styling
+                if (data.answer) {
+                    // Escape HTML for safety
+                    const escapedText = data.answer
+                        .replace(/&/g, "&amp;")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;");
+
+                    // Replace new lines with <br>
+                    summaryBox.innerHTML = `<div style="
+        white-space: pre-wrap;
+        background: #f9f9f9;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 14px;
+        color: #333;
+    ">${escapedText}</div>`;
+                } else {
+                    summaryBox.textContent = 'No solution returned.';
+                }
+
+
+            } catch (error) {
+                console.error('Error asking AI:', error);
+                alert('Failed to get AI response.');
+            }
+
+            // Remove loader and enable button
+            loader.remove();
+            submitBtn.disabled = false;
+
+            closeModal();
+        }
+
+
+</script>
+<style>
+    @keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+/* Add this CSS somewhere in your stylesheet */
+.loader {
+  border-top-color: #3498db; /* blue color */
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+  border-left-color: transparent;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+    /* Loader Spinner Styles */
+    /* .loader {
+        border-top-color: #3498db;
+        animation: spin 1s ease-in-out infinite;
+    } */
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Full-page loader */
+    #fullPageLoader {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+    }
+</style>
+
+{% endblock %}

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+
+    <title>{% block title %}OCR{% endblock %}</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#004d40', // green-400
+                        dark: '#0F172A',    // slate-900
+                        surface: '#1E293B', // slate-800
+                        accent: '#38BDF8',  // sky-400
+                        lightText: '#CBD5E1' // slate-300
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+   
+    
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+
+<body class="flex min-h-screen">
+
+    <!-- Sidebar -->
+    <div class="flex">
+        <!-- Sidebar auto scrollbar -->
+        <div class="w-64 bg-primary text-white flex flex-col p-6 m-2 rounded-lg shadow-lg overflow-y-auto">
+            <!-- Logo Section -->
+            <a href="#" class="text-2xl font-bold flex items-center space-x-3 mb-12">
+                <i class="bi bi-capsule text-white text-3xl"></i>
+                <span class="text-white">OCR</span>
+            </a>
+        
+            <!-- Sidebar Links -->
+            <ul class="space-y-6">
+                <li><a href="/" class="hover:text-accent transition-all duration-300">Dashboard</a></li>
+                <li><a href="/about" class="hover:text-accent transition-all duration-300">About</a></li>
+                <li><a href="/team" class="hover:text-accent transition-all duration-300">Our Team</a></li>
+                <li><a href="/contact" class="hover:text-accent transition-all duration-300">Contact</a></li>
+            </ul>
+        </div>
+        
+
+        <!-- Main Content -->
+        <div class="flex-grow m-2">
+            <nav class="bg-primary text-white shadow-lg mb-8">
+                <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+                    <ul class="hidden md:flex space-x-8 text-lg font-medium">
+                        <li><a href="#" class="hover:text-accent transition-all duration-300">Home</a></li>
+                        <li><a href="/about" class="hover:text-accent transition-all duration-300">About</a></li>
+                        <li><a href="#" class="hover:text-accent transition-all duration-300">Our Team</a></li>
+                        <li><a href="#" class="hover:text-accent transition-all duration-300">Contact</a></li>
+                    </ul>
+                </div>
+            </nav>
+
+            {% block content %}
+            <!-- Content will be inserted here by other templates -->
+            {% endblock %}
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <!-- <footer class="bg-surface py-6 text-center mt-auto">
+        <p class="text-lightText text-lg">&copy; 2025 AI-Enhanced OCR for Medical Prescription Interpretation</p>
+        <p class="text-lightText text-sm">All Rights Reserved</p>
+    </footer> -->
+    <!-- Before closing </body> -->
+    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+    <script>
+        AOS.init();
+    </script>
+
+
+</body>
+
+</html>
