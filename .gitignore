@@ -27,3 +27,112 @@ build/
 dist/
 # Ignore package metadata files
 *.egg-info/
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.p~  
+*.swp
+
+# Django specific
+*.log
+*.pot
+*.pyc
+db.sqlite3
+media/
+staticfiles/
+
+# Virtual environment
+env/
+venv/
+ENV/
+.venv/
+.Python
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+*.iml
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Migrations (optional – include only if generated files should not be committed)
+**/migrations/*.py
+**/migrations/__pycache__/
+
+# dotenv
+.env
+.env.*
+
+# Coverage reports
+htmlcov/
+.coverage
+.tox/
+.cache/
+.nox/
+.coverage.*
+.cache/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# Build artifacts
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Test reports
+test-results/
+.junit.xml
+*.log
+
+# Pipenv
+Pipfile.lock
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# pytest
+.pytest_cache/
+
+# celery
+celerybeat-schedule
+celerybeat.pid
+
+# Sentry
+.sentryclirc
+
+# IDEs & Editors
+*.sublime*
+*.idea/
+*.code-workspace
+*.komodoproject
+
+# Docker
+*.pid
+*.seed
+docker-compose.override.yml
