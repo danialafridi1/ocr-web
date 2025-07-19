@@ -34,7 +34,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 HUGGING_FACE_API_KEY = os.getenv('HUGGING_FACE_API_KEY')
 # Replace with your actual API key
 DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY')
-OPENROUTER_API_KEY  = os.getenv('OPENROUTER_API_KEY')
+# os.getenv('OPENROUTER_API_KEY')
+OPENROUTER_API_KEY = "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"
 # Application definition
 
 INSTALLED_APPS = [

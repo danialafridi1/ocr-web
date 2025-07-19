@@ -1,6 +1,7 @@
 
 import io
 import json
+import traceback
 import cv2
 import numpy as np
 from PIL import Image
@@ -8,7 +9,8 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import tempfile
 import os
-from transformers import TrOCRProcessor, VisionEncoderDecoderModel
+import requests
+from transformers import Pix2StructForConditionalGeneration, Pix2StructProcessor, TrOCRProcessor, VisionEncoderDecoderModel
 from django.shortcuts import render
 from tensorflow.keras.models import load_model
 
@@ -17,14 +19,15 @@ from ocr_web.settings import MEDIA_ROOT
 
 
 # Create your views here.
+pix2struct_processor = Pix2StructProcessor.from_pretrained(
+    "google/pix2struct-docvqa-base")
+pix2struct_model = Pix2StructForConditionalGeneration.from_pretrained(
+    "google/pix2struct-docvqa-base")
 
 
 def index(request):
     return render(request, 'index.html')
 
-
-
-                
 
 # Load TrOCR model and processor once
 processor = TrOCRProcessor.from_pretrained("microsoft/trocr-large-handwritten")
@@ -33,12 +36,12 @@ model = VisionEncoderDecoderModel.from_pretrained(
 
 # load ocr_model.h5 check if the file exists
 
-ocr_model = load_model(MEDIA_ROOT+ '/mnist-model.h5');
+ocr_model = load_model(MEDIA_ROOT + '/mnist-model.h5')
 # print if the model is loaded successfully
 if ocr_model:
     print("OCR model loaded successfully.")
 else:
-    print("Error loading OCR model.");
+    print("Error loading OCR model.")
 
 
 def preprocess_for_doctr(pil_img, target_size=(1024, 256)):
@@ -128,6 +131,51 @@ def process_image(request):
             results.append({'algorithm': 'Tesseract OCR',
                            'result': f'Error: {str(e)}'})
 
+    # --- PaddleOCR ---
+    if 'paddleocr' in algorithms:
+        try:
+            from paddleocr import PaddleOCR
+
+            # or 'en', 'ch', etc.
+            ocr = PaddleOCR(use_angle_cls=True, lang='en')
+            # Convert RGB to BGR for OpenCV
+            img_np = np.array(original_img)[:, :, ::-1]
+            result = ocr.predict(img_np)
+
+            extracted_text = []
+            for line in result:
+                for word_info in line:
+                    # word_info format: [coords, (text, confidence)]
+                    text = word_info[1][0]
+                    extracted_text.append(text)
+
+            joined_text = "\n".join(
+                extracted_text).strip() or 'No Text Detected'
+            results.append({'algorithm': 'PaddleOCR', 'result': joined_text})
+        except Exception as e:
+            results.append({'algorithm': 'PaddleOCR',
+                            'result': f'Error: {str(e)}'})
+            
+    if 'pix2struct' in algorithms:
+        try:
+            prompt = "Extract all text from this document"
+            inputs = pix2struct_processor(
+                images=original_img, text=prompt, return_tensors="pt")
+            outputs = pix2struct_model.generate(**inputs)
+            result_text = pix2struct_processor.batch_decode(
+                outputs, skip_special_tokens=True)[0].strip()
+
+            results.append({
+                'algorithm': 'Pix2Struct',
+                'result': result_text or 'No Text Detected'
+            })
+        except Exception as e:
+            print(f"[Pix2Struct Error] {str(e)}")
+            traceback.print_exc()
+            results.append({
+                'algorithm': 'Pix2Struct',
+                'result': f'Error: {str(e)}'
+            })
     # --- EasyOCR ---
     if 'easyocr' in algorithms:
         try:
@@ -240,8 +288,10 @@ def summarize_result(request):
             }
 
             # Send the POST request to DeepSeek API for summarization
-            response = request.post(
+            response = requests.post(
                 DEEPSEEK_API_URL, headers=headers, data=json.dumps(payload))
+            print(
+                f"[DeepSeek] API Response: {response.status_code}, {response.text}")
 
             # Check if the request was successful
             if response.status_code == 200:
@@ -252,6 +302,10 @@ def summarize_result(request):
                 return JsonResponse({'error': f"API error: {response.status_code}, {response.text}"}, status=500)
 
         except Exception as e:
+            import traceback
+            print("[Error] Exception Traceback:")
+            traceback.print_exc()
+            print(f"Error during summarization: {str(e)}")
             return JsonResponse({'error': f'Failed to summarize text: {str(e)}'}, status=500)
 
     return JsonResponse({'error': 'Invalid request method'}, status=400)
