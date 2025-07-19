@@ -257,8 +257,7 @@ def process_image(request):
 
 
 DEEPSEEK_API_URL = "https://openrouter.ai/api/v1/chat/completions"
-DEEPSEEK_API_KEY = settings.OPENROUTER_API_KEY or os.getenv(
-    'OPENROUTER_API_KEY')
+DEEPSEEK_API_KEY = settings.OPENROUTER_API_KEY
 print(f"[DeepSeek] Using API Key: {DEEPSEEK_API_KEY[:5]}...")
 print(f"[DeepSeek] API Key: {DEEPSEEK_API_KEY}")
 
@@ -293,9 +292,7 @@ def summarize_result(request):
                 'X-Title': 'DeepSeek Summarization',
                 'X-Description': 'Summarization of OCR results using DeepSeek API',
             }
-            # Print first 5 chars for security
-            print(f"[DeepSeek] Using API Key: {DEEPSEEK_API_KEY[:5]}...")
-            print(f"[DeepSeek] API KEy: {DEEPSEEK_API_KEY}")
+            
 
             # Send the POST request to DeepSeek API for summarization
             response = requests.post(

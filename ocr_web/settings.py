@@ -30,13 +30,12 @@ ALLOWED_HOSTS = []
 # media forlder
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# openai api key
 HUGGING_FACE_API_KEY = os.getenv('HUGGING_FACE_API_KEY')
-# Replace with your actual API key
 DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY')
 
 OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY')
-# Application definition
+print(f"[OpenRouter] Using API Key: {OPENROUTER_API_KEY[:5]}...")
+print(f"[OpenRouter] API Key: {OPENROUTER_API_KEY}")
 
 INSTALLED_APPS = [
     'django.contrib.admin',
