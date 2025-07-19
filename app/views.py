@@ -155,7 +155,7 @@ def process_image(request):
         except Exception as e:
             results.append({'algorithm': 'PaddleOCR',
                             'result': f'Error: {str(e)}'})
-            
+
     if 'pix2struct' in algorithms:
         try:
             prompt = "Extract all text from this document"
@@ -256,8 +256,11 @@ def process_image(request):
     return JsonResponse({'error': 'No results returned.'}, status=500)
 
 
-DEEPSEEK_API_URL = "https://openrouter.ai/api/v1/completions"  # DeepSeek API endpoint
-DEEPSEEK_API_KEY = settings.OPENROUTER_API_KEY
+DEEPSEEK_API_URL = "https://openrouter.ai/api/v1/chat/completions"
+DEEPSEEK_API_KEY = settings.OPENROUTER_API_KEY or os.getenv(
+    'OPENROUTER_API_KEY')
+print(f"[DeepSeek] Using API Key: {DEEPSEEK_API_KEY[:5]}...")
+print(f"[DeepSeek] API Key: {DEEPSEEK_API_KEY}")
 
 
 def summarize_result(request):
@@ -272,20 +275,27 @@ def summarize_result(request):
         try:
             # Prepare the payload for the DeepSeek API request
             payload = {
-                "model": "deepseek/deepseek-r1:free",  # The DeepSeek R1 free model
-                # Use "prompt" instead of "input"
-                "prompt": f"Summarize the following text: {result_text}",
-                "parameters": {
-                    "temperature": 0.7,  # Adjust as needed
-                    # Limit summary length (adjust as needed)
-                    "max_tokens": 100,
-                }
+                # Correct OpenRouter DeepSeek model
+                "model": "deepseek/deepseek-chat-v3-0324:free",
+                "messages": [
+                    {"role": "system", "content": "You are a helpful summarizer."},
+                    {"role": "user", "content": f"Summarize the following text: {result_text}"}
+                ],
+                "temperature": 0.7,
+                "max_tokens": 100  # Optional, OpenRouter supports this
             }
+
 
             headers = {
                 'Authorization': f'Bearer {DEEPSEEK_API_KEY}',
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'HTTP-Referer': 'http://127.0.0.1:8001',
+                'X-Title': 'DeepSeek Summarization',
+                'X-Description': 'Summarization of OCR results using DeepSeek API',
             }
+            # Print first 5 chars for security
+            print(f"[DeepSeek] Using API Key: {DEEPSEEK_API_KEY[:5]}...")
+            print(f"[DeepSeek] API KEy: {DEEPSEEK_API_KEY}")
 
             # Send the POST request to DeepSeek API for summarization
             response = requests.post(
@@ -295,9 +305,13 @@ def summarize_result(request):
 
             # Check if the request was successful
             if response.status_code == 200:
-                summary = response.json().get('choices')[0].get(
-                    'text')  # Update to reflect correct response format
+                # Update to reflect correct response format
+                summary = response.json()['choices'][0]['message']['content']
+                print(f"[DeepSeek] Summary: {summary}")
+                if not summary:
+                    return JsonResponse({'error': 'No summary returned from DeepSeek.'}, status=500)
                 return JsonResponse({'summary': summary})
+
             else:
                 return JsonResponse({'error': f"API error: {response.status_code}, {response.text}"}, status=500)
 
@@ -316,39 +330,46 @@ def askAi(request):
         data = json.loads(request.body)
         question = data.get('question')
         result_text = data.get('result_text')
+
         if not question:
             return JsonResponse({'error': 'No question provided.'}, status=400)
         if not result_text:
             return JsonResponse({'error': 'No text provided for question.'}, status=400)
 
-        # here you have to send promot as question promot related to context result_text
-        # and then send the response of the model back to the client
         try:
-            # Prepare the payload for the DeepSeek API request
+            # Correct chat-style payload
             payload = {
-                "model": "deepseek/deepseek-r1:free",  # The DeepSeek
-                # Use "prompt"
-                "prompt": f"Answer the following question based on the context: \n\nContext: \n{result_text}\n\nQuestion: \n{question}",
-                "parameters": {
-                    "temperature": 0.7,  # Adjust as needed
-                    # Limit response length (adjust as needed)
-                    "max_tokens": 100,
-                }
+                # Use valid model (adjust based on availability)
+                "model": "deepseek/deepseek-chat-v3-0324:free",
+                "messages": [
+                    {"role": "system", "content": "You are a helpful assistant that answers questions based on the given context."},
+                    {"role": "user", "content": f"Context:\n{result_text}\n\nQuestion:\n{question}"}
+                ],
+                "temperature": 0.7,
+                "max_tokens": 300  # You can increase max_tokens for longer answers
             }
 
             headers = {
-                'Authorization': f'bearer {DEEPSEEK_API_KEY}',
-                'Content-Type': 'application/json'
+                'Authorization': f'Bearer {DEEPSEEK_API_KEY}',
+                'Content-Type': 'application/json',
+                'HTTP-Referer': 'http://127.0.0.1:8001',
+                'X-Title': 'DeepSeek Q&A'
             }
+
             response = requests.post(
                 DEEPSEEK_API_URL, headers=headers, data=json.dumps(payload))
+            print(
+                f"[AskAI] API Response: {response.status_code}, {response.text}")
+
             if response.status_code == 200:
-                summary = response.json().get('choices')[0].get(
-                    'text')  # Update to reflect correct response format
-                return JsonResponse({'answer': summary})
+                answer = response.json()['choices'][0]['message']['content']
+                return JsonResponse({'answer': answer})
             else:
                 return JsonResponse({'error': f"API error: {response.status_code}, {response.text}"}, status=500)
+
         except Exception as e:
-            return JsonResponse({'error': f'Failed to summarize text: {str(e)}'}, status=500)
+            import traceback
+            traceback.print_exc()
+            return JsonResponse({'error': f'Failed to get answer: {str(e)}'}, status=500)
 
     return JsonResponse({'error': 'Invalid request method'}, status=400)
