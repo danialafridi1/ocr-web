@@ -258,8 +258,6 @@ def process_image(request):
 
 DEEPSEEK_API_URL = "https://openrouter.ai/api/v1/chat/completions"
 DEEPSEEK_API_KEY = settings.OPENROUTER_API_KEY
-print(f"[DeepSeek] Using API Key: {DEEPSEEK_API_KEY[:5]}...")
-print(f"[DeepSeek] API Key: {DEEPSEEK_API_KEY}")
 
 
 def summarize_result(request):
@@ -278,12 +276,12 @@ def summarize_result(request):
                 "model": "deepseek/deepseek-chat-v3-0324:free",
                 "messages": [
                     {"role": "system", "content": "You are a helpful summarizer."},
-                    {"role": "user", "content": f"Summarize the following text: {result_text}"}
+                    {"role": "user",
+                        "content": f"Summarize the following text: {result_text}"}
                 ],
                 "temperature": 0.7,
                 "max_tokens": 100  # Optional, OpenRouter supports this
             }
-
 
             headers = {
                 'Authorization': f'Bearer {DEEPSEEK_API_KEY}',
@@ -292,7 +290,6 @@ def summarize_result(request):
                 'X-Title': 'DeepSeek Summarization',
                 'X-Description': 'Summarization of OCR results using DeepSeek API',
             }
-            
 
             # Send the POST request to DeepSeek API for summarization
             response = requests.post(

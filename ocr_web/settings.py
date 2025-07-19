@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,13 +31,15 @@ DEBUG = True
 ALLOWED_HOSTS = []
 # media forlder
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+load_dotenv()
 
-HUGGING_FACE_API_KEY = os.getenv('HUGGING_FACE_API_KEY')
-DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY')
-
-OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY')
-print(f"[OpenRouter] Using API Key: {OPENROUTER_API_KEY[:5]}...")
+HUGGING_FACE_API_KEY = os.getenv("HUGGING_FACE_API_KEY")
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+SECRET_KEY = os.getenv("SECRET_KEY")
 print(f"[OpenRouter] API Key: {OPENROUTER_API_KEY}")
+print(
+    f"[DEBUG] API Key Type: Value: {DEEPSEEK_API_KEY}")
 
 INSTALLED_APPS = [
     'django.contrib.admin',
